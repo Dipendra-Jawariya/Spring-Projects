@@ -1,12 +1,14 @@
 package com.dipendra.jobms.job;
 
+import com.dipendra.jobms.job.dto.JobWithCompanyDTO;
+
 import java.util.List;
 
 
 public interface JobService {
     // created this as interface to promote loose coupling
 
-    List<Job> findAll();
+    List<JobWithCompanyDTO> findAll();
     void createJob(Job job);
     Job findJobById(Long id);
 
