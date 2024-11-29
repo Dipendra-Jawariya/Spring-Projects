@@ -46,7 +46,7 @@ public class JobDTO {
         this.location = location;
     }
 
-        private Long id;
+    private Long id;
     private String title;
     private String description;
     private String minSalary;
