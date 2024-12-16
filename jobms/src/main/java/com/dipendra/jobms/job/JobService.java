@@ -1,6 +1,7 @@
 package com.dipendra.jobms.job;
 
 import com.dipendra.jobms.job.dto.JobDTO;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
