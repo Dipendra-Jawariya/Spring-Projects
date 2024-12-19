@@ -9,6 +9,9 @@ import com.dipendra.jobms.job.clients.ReviewClient;
 import com.dipendra.jobms.job.dto.JobDTO;
 import com.dipendra.jobms.job.extenal.Company;
 import com.dipendra.jobms.job.extenal.Review;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.apache.http.client.methods.HttpGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -17,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,6 +36,8 @@ public class JobServiceImpl implements JobService {
 
     private CompanyClient companyClient;
     private ReviewClient reviewClient;
+
+//    int attempt = 0;
 
     public JobServiceImpl(JobRepository jobRepository,CompanyClient companyClient,ReviewClient reviewClient) {
         this.jobRepository = jobRepository;
@@ -58,13 +64,21 @@ public class JobServiceImpl implements JobService {
 
     }
     @Override
+//    @CircuitBreaker(name = "companyBreaker",fallbackMethod = "companyBreakerFallback")
+//    @Retry(name = "companyBreaker",fallbackMethod = "companyBreakerFallback")
+    @RateLimiter(name = "companyBreaker",fallbackMethod = "companyBreakerFallback")
     public List<JobDTO> findAll() {
-
+//        System.out.println("Attempt: " + ++attempt);
         List<Job> jobs = jobRepository.findAll();
 
         return jobs.stream().map(this::convertJobToDTO).collect(Collectors.toList());
     }
 
+    public List<String> companyBreakerFallback(Exception e) {
+        List<String>list = new ArrayList<>();
+        list.add("Dummy");
+        return list;
+    }
     @Override
     public void createJob(Job job) {
 //        job.setId(nextId++);
