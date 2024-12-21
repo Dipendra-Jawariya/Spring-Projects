@@ -1,5 +1,7 @@
 package com.dipendra.reviewms.review;
 
+import com.dipendra.reviewms.review.dto.ReviewMessage;
+import com.dipendra.reviewms.review.messaging.RewiewMessageProducer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,9 +13,11 @@ import java.util.List;
 public class ReviewController {
 
     private ReviewService reviewService;
+    private RewiewMessageProducer reviewMessageProducer;
 
-    public ReviewController(ReviewService reviewService) {
+    public ReviewController(ReviewService reviewService,RewiewMessageProducer reviewMessageProducer) {
         this.reviewService = reviewService;
+        this.reviewMessageProducer = reviewMessageProducer;
     }
 
     @GetMapping
@@ -30,6 +34,7 @@ public class ReviewController {
                                          @RequestBody Review review) {
         boolean isReviewSaved = reviewService.addReview(companyId,review);
         if(isReviewSaved) {
+            reviewMessageProducer.sendMessage(review);
             return new ResponseEntity<>("Review Added sucessfully", HttpStatus.OK);
         }
         else {
@@ -64,4 +69,10 @@ public class ReviewController {
         return new ResponseEntity<>("Review Cannot be Updated", HttpStatus.NOT_FOUND);
     }
 
+
+    @GetMapping("/averageRating")
+    public Double getAverageReview(@RequestParam Long companyId) {
+        List<Review> reviewList = reviewService.getAllReviews(companyId);
+        return reviewList.stream().mapToDouble(Review::getRating).average().orElse(0.0);
+    }
 }
